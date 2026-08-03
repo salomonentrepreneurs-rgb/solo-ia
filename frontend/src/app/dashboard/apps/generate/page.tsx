@@ -1,26 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AppGenerator from '@/components/apps/AppGenerator';
 import Card from '@/components/ui/Card';
 
-export default function GenerateAppPage() {
+function GenerateContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    if (!authLoading && !user) router.push('/login');
-  }, [user, authLoading, router]);
-
-  if (authLoading || !user) {
+  if (authLoading) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full" />
       </div>
     );
+  }
+
+  if (!user) {
+    router.push('/login');
+    return null;
   }
 
   return (
@@ -42,5 +43,17 @@ export default function GenerateAppPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function GenerateAppPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full" />
+      </div>
+    }>
+      <GenerateContent />
+    </Suspense>
   );
 }
